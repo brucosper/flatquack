@@ -54,7 +54,7 @@ const abstractBundle = bundle => {
 						: type.code === "http://hl7.org/fhirpath/System.String" ? "string" : type.code;
 					const isArray =  elem.max !== "1" && elem.max !== "0";
 					const referenceTargets = type.targetProfile &&
-						type.targetProfile.map( profile => profile.split("/")[profile.split("/").length-1] );
+						[].concat(type.targetProfile).map( profile => profile.split("/")[profile.split("/").length-1] );
 					definitions[path] = {[jsonKeys.type]: outputType, [jsonKeys.isArray]:isArray};
 					if (includeReferenceTargets) definitions[path][jsonKeys.referenceTargets] = referenceTargets;
 					if (includeDocs) definitions[path][jsonKeys.docs] = elem.short || "";
@@ -70,6 +70,6 @@ const typeProfiles =  fs.readFileSync(path.join(__dirname, fhirDir, "profiles-ty
 const resourceDefinitions = abstractBundle(JSON.parse(resourceProfiles));
 const typeDefinitions =  abstractBundle(JSON.parse(typeProfiles));
 const definitions = Object.assign(resourceDefinitions, typeDefinitions); 
-console.log("Generated: " + path.join(import.meta.dirname, outputFile));
-fs.writeFileSync(path.join(import.meta.dirname, outputFile), JSON.stringify(definitions, null, formatOutputJson ? 2 : null));
+console.log("Generated: " + path.join(__dirname, outputFile));
+fs.writeFileSync(path.join(__dirname, outputFile), JSON.stringify(definitions, null, formatOutputJson ? 2 : null));
 
