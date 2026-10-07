@@ -5,7 +5,6 @@ import path from 'path';
 import {Glob} from "bun";
 import {parseArgs} from "util";
 import {templateToQuery} from "./query-builder.js";
-import fhirSchema from "../schemas/fhir-schema-r4.json";
 import duckdb from "duckdb";
 import {format} from "sql-formatter";
 
@@ -25,7 +24,7 @@ Options:
   -t, --template <path>         Template file path or @template-name (default: @csv)
   -v, --view-path <path>        Path to search for view definition files (default: ".")
   -p, --view-pattern <pattern>  Glob pattern for view definition files (default: "**/*.vd.json")
-  -s, --schema-file <path>      Custom schema file path (default: built-in FHIR R4 schema)
+  -s, --schema <version>        Built-in FHIR schema to use: r4|stu3 (default: r4)
       --macros <path>           Custom macro file or directory (can be repeated)
       --var <name=value>        Values for FHIRPath constants in ViewDefinition (can be repeated)
       --param <name=value>      Template parameters (can be used repeated)
@@ -161,7 +160,7 @@ const args = parseArgs({
 			short: "p"
 		},
 		"template": {type: "string", short: "t"},
-		"schema-file": {type: "string", short: "s"},
+		"schema": {type: "string", short: "s", default: "r4"},
 		"macros": {type: "string", multiple: true},
 		"verbose": {type: "boolean"},
 		"mode": {type: "string", short: "m", default: "preview"},
@@ -199,9 +198,17 @@ const vars = args.values["var"]
 	? Object.fromEntries(args.values["var"].map(v => v.split("=")))
 	: undefined;
 
-const schema = args.values["schema-file"]
-	? JSON.parse(fs.readFileSync(args.values["schema-file"]))
-	: fhirSchema;
+const schemaName = args.values["schema"];
+const schemasDir = path.join(import.meta.dir, "../schemas");
+const schemaPath = path.join(schemasDir, `fhir-schema-${schemaName}.json`);
+if (!/^[\w.-]+$/.test(schemaName) || !fs.existsSync(schemaPath)) {
+	const available = fs.readdirSync(schemasDir)
+		.map(f => f.match(/^fhir-schema-(.+)\.json$/)?.[1])
+		.filter(Boolean);
+	console.error(`Error: Schema "${schemaName}" is not available. Available schemas: ${available.join(", ")}`);
+	process.exit(1);
+}
+const schema = JSON.parse(fs.readFileSync(schemaPath, "utf-8"));
 
 const customMacros = loadMacros(args.values["macros"]);
 

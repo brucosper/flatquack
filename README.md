@@ -36,7 +36,7 @@ Additional steps if you would like to run scripts, unit tests or edit the projec
 | `--view-path` | `-v` | current directory | The absolute or relative path to your ViewDefinition JSON files. Note that the -view-pattern parameter describes which files within this path will be used. |
 | `--view-pattern` | `-p` |  `**/*.vd.json` | [Glob pattern](https://bun.sh/docs/api/glob) to define which files are ViewDefinitions. |
 | `--template` | `-t` | `@csv` | Path to [template](#templates---template-parameter) to use when generating SQL. May be the name of a [sample template](#sample-templates) or the path to a [custom template](#custom-templates) |
-| `--schema-file` | `-s` | FHIR R4 Schema | Path to a FHIR schema generated using the script included at `./scripts/build-fhir-schema.js`. This can be used to execute ViewDefinitions against FHIR data from versions other than R4.  See the [Generating a FHIR Schema](#generating-a-fhir-schema) seciton below for details.|
+| `--schema` | `-s` | `r4` | Built-in FHIR schema to use (`r4` or `stu3`), loaded from `./schemas/fhir-schema-{name}.json`. Errors if the schema is not available. See the [Generating a FHIR Schema](#generating-a-fhir-schema) section below for adding other versions.|
 | `--macros` | | | Experimental - Path to file(s) or directory(ies) containing additional SQL macros. Prefix with `@` to reference files in the templates directory. This argument may be repeated. See [details below](#macros---macros-parameter).| 
 | `--param` | | | `name=value` pair of user defined variables to be used when generating SQL with a [custom template](#custom-templates). This argument may be repeated. | 
 | `--var` | | | `name=value` pair of FHIRPath variables for use in ViewDefinition expressions (referenced as `%name`). This argument may be repeated. | 
@@ -126,7 +126,7 @@ Use the `--macros` parameter to load macro files when running FlatQuack. This pa
 - **Multiple sources**: Repeat the parameter to load from multiple locations
 
 ## Generating a FHIR Schema
-The schema for FHIR R4 is included with FlatQuack, but you may want to execute ViewDefinition files against other FHIR versions as well. To do this you can generate schema files for those version and pass them in with the `--schema-file` command line argument.
+The schema for FHIR R4 is included with FlatQuack, but along with STU3 (`--schema=stu3`). To support other FHIR versions, generate a schema file and save it as `schemas/fhir-schema-{name}.json`, then select it with `--schema={name}`.
 
 To generate a schema:
 1. Download and decompress the FHIR definitions in JSON format from `https://hl7.org/fhir/downloads.html` (or the corresponding URL for the FHIR version you want to use).
